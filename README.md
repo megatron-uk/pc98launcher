@@ -84,6 +84,51 @@ A full guide of how to set up a build environment is on my wiki:
 ## Adding metadata & images
 
 
+### Metadata files
+
+You can add additional metadata to your game by placing a text file in each game directory named `launch.dat`.
+
+The contents of this file is as follows:
+
+```
+[defaults]
+name=
+developer=
+midi_mpu=
+midi_serial=
+year=
+genre=
+images=
+series=
+
+```
+
+The fields `name`, `developer` and `genre` are all simple text, maximimum of 32 characters.
+
+The fields `midi_mpu` and `midi_serial` are integers, where __1__ means supported and any other value means unsupported.
+
+The `images` field is a comma seperated list of the artwork available. The path is relative to the game directory, so `image01.bmp` will be expanded to include the drive and path that the game is located under (A:\Games\gamename\image01.bmp, for example).
+
+Images will be shown in the order they are listed, so place the image you want shown by default as the first item in the list.
+
+The `series` field is a text name of the larger game series in which the game is based, useful for those games in which there are more than one game (Doom and Doom II, for example). You can use the __filter__ option within the application to find all games within the same series, as long as they are tagged up with the correct metadata.
+
+An example is shown below:
+
+```
+[defaults]
+name=Advanced Power Dolls 2
+developer=Kogado Studio Inc.
+midi_mpu=0
+midi_serial=1
+year=1996
+genre=Strategy
+images=cover.bmp,screen1.bmp,screen2.bmp,box.bmp
+series=Power Dolls
+
+```
+
+
 ### Converting images to useable BMP files
 
 The BMP files used by the application need to be 8bpp but of a limited palette so that the user interface does not suffer from colour issues (approximately 40 colours are reserved by the user interface and fonts).
