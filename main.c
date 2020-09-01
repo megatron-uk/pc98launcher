@@ -73,7 +73,7 @@ int main() {
 	has_screenshot = 0;
 	has_launchdat = 0;
 	has_images = 0;
-	old_gameid = 0;
+	old_gameid = -1;
 	active_pane = BROWSER_PANE;				// Set initial focus to browser pane
 	user_input = joy_input = key_input = 0;	// Initial state of all input variables
 	exit = 0;								// Dont exit from main loop unless specified
@@ -363,22 +363,22 @@ int main() {
 	if (config->verbose){
 		printf("%s.%d\t Building initial selection list\n", __FILE__, __LINE__);
 	}
-	while(gamedata->next != NULL){
+	while(gamedata != NULL){
 		if (config->verbose){
-			printf("%s.%d\t Info - adding Game ID: [%d]\n", __FILE__, __LINE__, gamedata->gameid);
+			printf("%s.%d\t Info - adding Game ID: [%d], %s\n", __FILE__, __LINE__, gamedata->gameid, gamedata->name);
 		}
 		state->selected_list[i] = gamedata->gameid;
 		gamedata = gamedata->next;
 		i++;
 	}
-	gamedata = gamedata_head; // Restore first item
-	state->selected_max = i;
-	state->selected_page = 1;
-	state->selected_line = 1;
-	state->total_pages = 0;
-	state->selected_gameid = 1;
-	state->selected_game = getGameid(1, gamedata);
-	for(i = 0; i < state->selected_max ; i++){
+	gamedata = gamedata_head;	// Restore first item
+	state->selected_max = i; 	// Number of items in selection list
+	state->selected_page = 1;	// Start on page 1
+	state->selected_line = 0;	// Start on line 0
+	state->total_pages = 0;		
+	state->selected_gameid = state->selected_list[0]; 	// Game is that 0th element of the selection list
+	state->selected_game = getGameid(state->selected_gameid, gamedata);
+	for(i = 0; i <= state->selected_max ; i++){
 		if (i % ui_browser_max_lines == 0){
 			state->total_pages++;
 		}
@@ -472,7 +472,7 @@ int main() {
 	gfx_Flip();
 	
 	// Update info with current selection
-	
+	ui_ReselectCurrentGame(state);
 	status = ui_UpdateInfoPane(state, gamedata, launchdat);
 	if (status != UI_OK){
 		printf("ERROR! Unable to update info pane contents!\n");
@@ -504,43 +504,49 @@ int main() {
 						if (state->selected_page == 1){
 							// Loop back to last page
 							state->selected_page = state->total_pages;
-							ui_UpdateBrowserPane(state, gamedata);
 						} else {
 							// Go back one page
 							state->selected_page--;
-							ui_UpdateBrowserPane(state, gamedata);
 						}
 						// Reset to line 1 of the new page
-						state->selected_line = 1;							
+						state->selected_line = 0;							
 					} else {
 						// Move up one line
 						state->selected_line--;
 					}
+					// Detect if selected game has changed
+					ui_ReselectCurrentGame(state);
+					ui_UpdateBrowserPane(state, gamedata);
 					break;
 				case(input_down):
 					// Down current list by one row
-					if (state->selected_line == ui_browser_max_lines){
+					if ((state->selected_line == ui_browser_max_lines) || (state->selected_line == (state->selected_max - 1))){
 						if (state->selected_page == state->total_pages){
 							// Go to first page
 							state->selected_page = 1;
-							ui_UpdateBrowserPane(state, gamedata);
 						} else {
 							// Go forward one page
 							state->selected_page++;
-							ui_UpdateBrowserPane(state, gamedata);
 						}
 						// Reset to line 1 of the new page
-						state->selected_line = 1;							
+						state->selected_line = 0;							
 					} else {
 						// Move down one line
 						state->selected_line++;
 					}
+					// Detect if selected game has changed
+					ui_ReselectCurrentGame(state);
+					ui_UpdateBrowserPane(state, gamedata);
 					break;
 				case(input_scroll_up):
 					// Scroll list up by one page
+					// Detect if selected game has changed
+					ui_ReselectCurrentGame(state);
 					break;
 				case(input_scroll_down):
 					// Scroll list down by one page
+					// Detect if selected game has changed
+					ui_ReselectCurrentGame(state);
 					break;
 				case(input_left):
 					// Cycle left through artwork
@@ -569,8 +575,6 @@ int main() {
 				default:
 					break;
 			}
-			// Detect if selected game has changed
-			ui_ReselectCurrentGame(state);
 			//gfx_Flip();
 			
 			// Only refresh browser, artwork and info panes if the selected game has changed
@@ -612,6 +616,9 @@ int main() {
 				if (state->selected_game == NULL){
 					// Could not load gamedata object for this id - why?
 					// Reset to old gameid
+					if (config->verbose){
+						printf("%s.%d\t Warning, unable to find gamedata for Game ID %d, reverting to %d\n", __FILE__, __LINE__, state->selected_gameid, old_gameid);
+					}
 					state->selected_gameid = old_gameid;
 					old_gameid = -1;
 				} else {

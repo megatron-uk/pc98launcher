@@ -28,7 +28,7 @@
 gamedata_t * getGameid(int gameid, gamedata_t *gamedata){
 	// Find a given gameid from the list	
 	
-	while (gamedata->next != NULL){
+	while (gamedata != NULL){
 		if (gamedata->gameid == gameid){
 			return gamedata;
 		}
@@ -179,18 +179,21 @@ int swapGamedata(gamedata_t *gamedata1, gamedata_t *gamedata2){
 	gdata_temp = (gamedata_t *) malloc(sizeof(gamedata_t));
 	
 	/* keep temp store of gamedata1 */
+	gdata_temp->gameid = gamedata1->gameid;
 	gdata_temp->drive = gamedata1->drive;
 	strcpy(gdata_temp->path, gamedata1->path);
 	strcpy(gdata_temp->name, gamedata1->name);
 	gdata_temp->has_dat = gamedata1->has_dat;
 	
 	/* swap a with b */
+	gamedata1->gameid = gamedata2->gameid;
 	gamedata1->drive = gamedata2->drive;
 	strcpy(gamedata1->path, gamedata2->path);
 	strcpy(gamedata1->name, gamedata2->name);
 	gamedata1->has_dat = gamedata2->has_dat;
 	
 	/* swap b with temp */
+	gamedata2->gameid = gdata_temp->gameid;
 	gamedata2->drive = gdata_temp->drive;
 	strcpy(gamedata2->path, gdata_temp->path);
 	strcpy(gamedata2->name, gdata_temp->name);

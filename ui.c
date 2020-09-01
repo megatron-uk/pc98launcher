@@ -94,7 +94,7 @@ int ui_DisplayArtwork(FILE *screenshot_file, bmpdata_t *screenshot_bmp, state_t 
 	// =======================
 	// Close previous screenshot file handle
 	// =======================
-	if (screenshot_file){
+	if (screenshot_file != NULL){
 		fclose(screenshot_file);
 		screenshot_file = NULL;
 	}
@@ -162,6 +162,7 @@ int ui_DisplayArtwork(FILE *screenshot_file, bmpdata_t *screenshot_bmp, state_t 
 	if (UI_VERBOSE){
 		printf("%s.%d\t Call to display %s complete\n", __FILE__, __LINE__, imagefile->next->filename);	
 	}
+	fclose(screenshot_file);
 	return UI_OK;
 }
 
@@ -617,8 +618,12 @@ int	ui_ReselectCurrentGame(state_t *state){
 		endpos = startpos + ui_browser_max_lines;
 	}
 	
-	selected = 1;
-	for(i = startpos; i < endpos ; i++){
+	if (UI_VERBOSE){
+		printf("%s.%d\t Reselecting game: %d, endpos: %d, selected line: %d\n", __FILE__, __LINE__, startpos, endpos, state->selected_line);
+	}
+		
+	selected = 0;
+	for(i = startpos; i <= endpos ; i++){
 		gameid = state->selected_list[i];
 		
 		// This is the current selected game
@@ -681,10 +686,16 @@ int ui_UpdateBrowserPane(state_t *state, gamedata_t *gamedata){
 	// Display the entries for this page
 	gamedata_head = gamedata;
 	y = ui_browser_font_y_pos;
+	if (UI_VERBOSE){
+		printf("%s.%d\t Building browser menu [%d-%d]\n", __FILE__, __LINE__, startpos, endpos);
+	}
 	for(i = startpos; i < endpos ; i++){
 		gamedata = gamedata_head;
 		gameid = state->selected_list[i];
 		selected_game = getGameid(gameid, gamedata);
+		if (UI_VERBOSE){
+			printf("%s.%d\t - Line %d: Game ID %d, %s\n", __FILE__, __LINE__, i, gameid, selected_game->name);
+		}
 		sprintf(msg, "%s", selected_game->name);
 		gfx_Puts(ui_browser_font_x_pos, y, ui_font, msg);
 		y += ui_font->height + 2;
@@ -697,12 +708,20 @@ int ui_UpdateBrowserPane(state_t *state, gamedata_t *gamedata){
 int ui_UpdateBrowserPaneStatus(state_t *state){
 	// Draw browser pane status message in status panel
 	char	msg[64];		// Message buffer for the status bar
-	
+	int y_pos;
 	// Blank out any previous selection cursor
 	gfx_BoxFill(ui_browser_cursor_xpos, ui_browser_font_y_pos, ui_browser_cursor_xpos + ui_select_bmp->width, ui_browser_footer_font_ypos, PALETTE_UI_BLACK);
 
 	// Insert selection cursor
-	gfx_Bitmap(ui_browser_cursor_xpos, ui_browser_font_y_pos + ((ui_font->height + 2 ) * (state->selected_line - 1)), ui_select_bmp);
+	if (state->selected_line == 0){
+		y_pos = 0;
+	} else {
+		y_pos = (ui_font->height + 2 ) * (state->selected_line);
+	}
+	if (UI_VERBOSE){
+		printf("%s.%d\t Drawing selection icon at line %d, x:%d y:%d\n", __FILE__, __LINE__, state->selected_line, ui_browser_cursor_xpos, (ui_browser_font_y_pos + y_pos));
+	}
+	gfx_Bitmap(ui_browser_cursor_xpos, ui_browser_font_y_pos + y_pos, ui_select_bmp);
 	
 	// Text at bottom of browser pane
 	sprintf(msg, "Line %02d/%02d             Page %02d/%02d", state->selected_line, ui_browser_max_lines, state->selected_page, state->total_pages);
@@ -749,9 +768,13 @@ int ui_UpdateInfoPane(state_t *state, gamedata_t *gamedata, launchdat_t *launchd
 	gfx_Bitmap(ui_info_series_xpos, ui_info_series_ypos, ui_series_bmp);
 	
 	if (UI_VERBOSE){
-		printf("%s.%d\t Selected game: [%d]\n", __FILE__, __LINE__, state->selected_game->gameid);
-		printf("%s.%d\t has_dat: [%d]\n", __FILE__, __LINE__, state->selected_game->has_dat);
-		printf("%s.%d\t has_images: [%d]\n", __FILE__, __LINE__, state->has_images);
+		printf("%s.%d\t Selected State\n", __FILE__, __LINE__);
+		printf("%s.%d\t - Page: [%d]\n", __FILE__, __LINE__, state->selected_page);
+		printf("%s.%d\t - Line: [%d]\n", __FILE__, __LINE__, state->selected_line);
+		printf("%s.%d\t - selected game id: [%d]\n", __FILE__, __LINE__,  state->selected_gameid);
+		printf("%s.%d\t - retrieved game id: [%d]\n", __FILE__, __LINE__, state->selected_game->gameid);
+		printf("%s.%d\t - has_dat: [%d]\n", __FILE__, __LINE__, state->selected_game->has_dat);
+		printf("%s.%d\t - has_images: [%d]\n", __FILE__, __LINE__, state->has_images);
 	}
 	
 	// See if it has a launch.dat metadata file

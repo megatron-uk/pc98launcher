@@ -13,11 +13,14 @@ LIBS	 		= -lm
 INCLUDES 	=          
 
 # Compiler flags
-ASM_FLAGS 	= -mcpu=i486 -march=i486 
-LDFLAGS 	=
-CFLAGS 		= -mcpu=i486 -march=i486 #-O3
-LDSCRIPT 	=
-OCFLAGS	=
+ASM_FLAGS 		= -mcpu=i486 -march=i486
+ASM_FLAGS_386 	= -mcpu=i386 -march=i386
+LDFLAGS 			=
+CFLAGS 			= -mcpu=i486 -march=i486 -fomit-frame-pointer -ffast-math #-O2
+CFLAGS_386		= -mcpu=i386 -march=i386 -fomit-frame-pointer -ffast-math #-O2
+CFLAGS_DEBUG		= -g
+LDSCRIPT 		=
+OCFLAGS			=
 
 # What our application is named
 TARGET	= launcher.exe

@@ -16,7 +16,7 @@
 */
 
 // Constants
-#define FS_VERBOSE		0		// Enable/disable fstools verbose/debug output
+#define FS_VERBOSE		1		// Enable/disable fstools verbose/debug output
 #define DIR_BUFFER_SIZE	65		// Size of array for accepting directory paths
 #define MAX_DRIVES		26		// Maximum number of drive letters
 #define DRIVE_LETTERS	{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' }
