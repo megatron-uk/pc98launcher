@@ -134,7 +134,7 @@ int dirHasData(char *path){
 	return found;
 }
 
-int findDirs(char *path, gamedata_t *gamedata, int startnum){
+int findDirs(char *path, gamedata_t *gamedata, int startnum, config_t *config){
 	/* Open a search path and return a count of any directories found, creating a gamedata object for each one. */
 	
 	// path: Fully qualified path to search, e.g. "A:\Games"
@@ -156,6 +156,9 @@ int findDirs(char *path, gamedata_t *gamedata, int startnum){
 	char search_drive;
 	char search_dirname[DIR_BUFFER_SIZE];
 	
+	// Hold info from game metadata
+	launchdat_t *launchdat = NULL;
+	
 	/* initialise counters */
 	go = 1;
 	found = 0;
@@ -163,6 +166,8 @@ int findDirs(char *path, gamedata_t *gamedata, int startnum){
 	/* initialise the directory or search dirname buffer */
 	memset(old_dir_buffer, '\0', sizeof(old_dir_buffer));
 	memset(search_dirname, '\0', sizeof(search_dirname));
+	
+	launchdat = (launchdat_t *) malloc(sizeof(launchdat_t));	
 	
 	/* split drive and dirname from search path */
 	search_drive = drvLetterFromPath(path);
@@ -217,9 +222,29 @@ int findDirs(char *path, gamedata_t *gamedata, int startnum){
 							gamedata->next = (gamedata_t *) malloc(sizeof(gamedata_t));
 							gamedata->next->gameid = startnum;
 							gamedata->next->drive =search_drive;
-							strcpy(gamedata->next->path, search_dirname);
-							strcpy(gamedata->next->name, de->d_name);
+							strncpy(gamedata->next->path, search_dirname, 65);
+							strncpy(gamedata->next->name, de->d_name, MAX_FILENAME_SIZE);
 							gamedata->next->has_dat = dirHasData(search_dirname);
+							
+							// If pre-loading names from launchdat
+							if (gamedata->next->has_dat == 1){
+								if (config->preload_names == 1){
+									if (FS_VERBOSE){
+										printf("%s.%d\t Preloading realname\n", __FILE__, __LINE__);
+									}
+									status = getLaunchdata(gamedata->next, launchdat);
+									if (status == 0){
+										if (FS_VERBOSE){
+											printf("%s.%d\t Realname: %s\n", __FILE__, __LINE__, launchdat->realname);
+										}
+										strncpy(gamedata->next->name, launchdat->realname, MAX_STRING_SIZE);
+									} else {
+										if (FS_VERBOSE){
+											printf("%s.%d\t Metadata not found!\n", __FILE__, __LINE__);
+										}
+									}
+								}
+							}
 							gamedata->next->next = NULL;
 							startnum++;
 						}
@@ -228,7 +253,6 @@ int findDirs(char *path, gamedata_t *gamedata, int startnum){
 				closedir(dir);
 			}
 		}
-
 	} else {
 		printf("%s.%d\t Not a directory\n", __FILE__, __LINE__);
 	}
@@ -241,5 +265,6 @@ int findDirs(char *path, gamedata_t *gamedata, int startnum){
 		return -1;
 	}
 	
+	//free(launchdat);
 	return found;
 }

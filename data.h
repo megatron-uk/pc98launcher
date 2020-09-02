@@ -35,7 +35,7 @@ typedef struct gamedata {
 	int gameid;				// Unique ID for this game - assigned at scan time
 	char drive;				// Drive letter
 	char path[65];			// Full drive and path name; e.g. A:\Games\FinalFight
-	char name[MAX_FILENAME_SIZE];			// Just the directory name; e.g. FinalFight
+	char name[MAX_STRING_SIZE];			// Just the directory name; e.g. FinalFight
 	int has_dat;				// Flag to indicate __launch.dat was found in the game directory
 	struct gamedata *next;	// Pointer to next gamedata entry
 } __attribute__((__packed__)) __attribute__((aligned (2))) gamedata_t;
@@ -49,7 +49,8 @@ typedef struct launchdat {
 	char series[MAX_STRING_SIZE];		// Series name; e.g. Gradius, Streetfighter, etc.
 	char publisher[MAX_STRING_SIZE];		// The name of the publisher
 	char developer[MAX_STRING_SIZE];		// The name of the developer
-	char start[MAX_FILENAME_SIZE];		// Override the use of start.bat with an alternate executable
+	char start[MAX_FILENAME_SIZE];		// Name of the main start file
+	char alt_start[MAX_FILENAME_SIZE];	// Name of an alternative start file (e.g a config utility)
 	char images[IMAGE_BUFFER_SIZE];		// String containing all the image filenames
 } __attribute__((__packed__)) __attribute__((aligned (2))) launchdat_t;
 
@@ -67,6 +68,7 @@ typedef struct gamedir {
 typedef struct config {
 	int verbose;				// Verbose/debug flag
 	int save;					// Save the list of all games to a text file
+	int preload_names;		// Flag to indicate wheter a launch.dat is loaded at scrape-time to pick up real names
 	char dirs[MAX_SEARCHDIRS_SIZE];			// String containing all game dirs to search - it will then be parsed into a list below:
 	struct gamedir *dir;		// List of all the game search dirs
 } __attribute__((__packed__)) __attribute__((aligned (2))) config_t;

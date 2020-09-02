@@ -155,6 +155,8 @@ int main() {
 		printf("[default]\n");
 		printf("verbose=%d\n", config->verbose);
 		printf("gamedirs=%s\n", config->dirs);
+		printf("save=%d\n", config->save);
+		printf("preload_names=%d\n", config->preload_names);
 		printf("\n");
 		if (config->verbose == 0){
 			printf("Verbose mode is disabled, you will not receive any further logging after this point\n");
@@ -292,7 +294,7 @@ int main() {
 		//
 		// ======================               
 		found_tmp = 0;
-		found_tmp = findDirs(gamedir->path, gamedata, found);
+		found_tmp = findDirs(gamedir->path, gamedata, found, config);
 		found = found + found_tmp;
 		sprintf(msg, "Found %d games in %s", found_tmp, gamedir->path);
 		ui_ProgressMessage(msg);

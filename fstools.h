@@ -15,6 +15,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//#include "data.h"
+
 // Constants
 #define FS_VERBOSE		1		// Enable/disable fstools verbose/debug output
 #define DIR_BUFFER_SIZE	65		// Size of array for accepting directory paths
@@ -25,6 +27,6 @@
 int 		dirFromPath(char *path, char *buffer);
 int 		dirHasData(char *path);
 int 		drvLetterToNum(char drive_letter);
-char	drvNumToLetter(int drive_number);
-int 		findDirs(char *path, gamedata_t *gamedata, int startnum);
+char		drvNumToLetter(int drive_number);
+int 		findDirs(char *path, gamedata_t *gamedata, int startnum, config_t *config);
 int 		isDir(char *path);

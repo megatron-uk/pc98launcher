@@ -237,6 +237,9 @@ static int launchdatHandler(void* user, const char* section, const char* name, c
 		}
 	} else if (MATCH("default", "start")){
 		strncpy(launchdat->start, value, MAX_FILENAME_SIZE);
+	
+	} else if (MATCH("default", "alt_start")){
+		strncpy(launchdat->alt_start, value, MAX_FILENAME_SIZE);
 		
 	} else if (MATCH("default", "images")){
 		strncpy(launchdat->images, value, IMAGE_BUFFER_SIZE);
@@ -271,6 +274,7 @@ void configDefaults(config_t *config){
 	config->verbose = 0;
 	memset(config->dirs, '\0', strlen(config->dirs));
 	config->save = 0;
+	config->preload_names = 0;
 	config->dir = NULL;
 }
 
@@ -292,6 +296,7 @@ int getLaunchdata(gamedata_t *gamedata, launchdat_t *launchdat){
 		//printf("%s.%d\t Cannot load %s\n", __FILE__, __LINE__, filepath);
 		return -1;
 	} else {
+		//printf("%s.%d\t Loaded %s\n", __FILE__, __LINE__, filepath);
 		return 0;
 	}
 }
@@ -310,6 +315,8 @@ static int configHandler(void* user, const char* section, const char* name, cons
 		strncpy(config->dirs, value, MAX_SEARCHDIRS_SIZE);
 	} else if (MATCH("default", "savedirs")){
 		config->save =  atoi(value);
+	} else if (MATCH("default", "preload_names")){
+		config->preload_names =  atoi(value);
 	} else {
 		return 0;  /* unknown section/name, error */
 	}
