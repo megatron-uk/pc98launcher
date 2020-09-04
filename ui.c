@@ -102,7 +102,6 @@ int ui_DisplayArtwork(FILE *screenshot_file, bmpdata_t *screenshot_bmp, state_t 
 	// Clear artwork window
 	gfx_BoxFill(ui_artwork_xpos, ui_artwork_ypos, ui_artwork_xpos + 320, ui_artwork_ypos + 200, PALETTE_UI_BLACK);
 	memset(state->selected_image, '\0', sizeof(state->selected_image)); 
-	state->has_images = 0;
 	
 	// Construct full path of image
 	sprintf(msg, "%s\\%s", state->selected_game->path, imagefile->next->filename);
@@ -155,7 +154,6 @@ int ui_DisplayArtwork(FILE *screenshot_file, bmpdata_t *screenshot_bmp, state_t 
 			if (UI_VERBOSE){
 				printf("%s.%d\t Rendering BMP to buffer\n", __FILE__, __LINE__);	
 			}
-			
 			gfx_Bitmap(ui_artwork_xpos + ((320 - screenshot_bmp->width) / 2) , ui_artwork_ypos + ((200 - screenshot_bmp->height) / 2), screenshot_bmp);
 		}
 	}
@@ -163,6 +161,27 @@ int ui_DisplayArtwork(FILE *screenshot_file, bmpdata_t *screenshot_bmp, state_t 
 		printf("%s.%d\t Call to display %s complete\n", __FILE__, __LINE__, imagefile->next->filename);	
 	}
 	fclose(screenshot_file);
+	return UI_OK;
+}
+
+int	ui_DrawConfirmPopup(state_t *state, gamedata_t *gamedata, launchdat_t *launchdat){
+	// Draw a confirmation box to start the game
+	
+	// Draw drop-shadow
+	gfx_BoxFillTranslucent(ui_launch_popup_xpos + 60, ui_launch_popup_ypos - 30, ui_launch_popup_xpos + 260, ui_launch_popup_ypos + 50, PALETTE_UI_DGREY);
+	
+	// Draw main box
+	gfx_BoxFill(ui_launch_popup_xpos + 50, ui_launch_popup_ypos - 40, ui_launch_popup_xpos + 250, ui_launch_popup_ypos + 40, PALETTE_UI_BLACK);
+	
+	// Draw main box outline
+	gfx_Box(ui_launch_popup_xpos + 50, ui_launch_popup_ypos - 40, ui_launch_popup_xpos + 250, ui_launch_popup_ypos + 40, PALETTE_UI_LGREY);
+	
+	gfx_Puts(ui_launch_popup_xpos + 110, ui_launch_popup_ypos - 30, ui_font, "Start Game?");
+	
+	gfx_Puts(ui_launch_popup_xpos + 60, ui_launch_popup_ypos - 5, ui_font, "Confirm (Enter)");
+	gfx_Puts(ui_launch_popup_xpos + 60, ui_launch_popup_ypos + 15, ui_font, "Cancel (Esc)");
+	
+	
 	return UI_OK;
 }
 
@@ -186,6 +205,47 @@ int ui_DrawInfoBox(){
 	
 	return UI_OK;
 }
+
+int	ui_DrawLaunchPopup(state_t *state, gamedata_t *gamedata, launchdat_t *launchdat, unsigned int toggle){
+	// Draw the popup window that lets us select from the main or alternate start file
+	// in order to launch a game
+	
+	int status;	
+	
+	// Draw drop-shadow
+	gfx_BoxFillTranslucent(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 10, ui_launch_popup_xpos + 10 + ui_launch_popup_width, ui_launch_popup_ypos + 10 + ui_launch_popup_height, PALETTE_UI_DGREY);
+	
+	// Draw main box
+	gfx_BoxFill(ui_launch_popup_xpos, ui_launch_popup_ypos, ui_launch_popup_xpos + ui_launch_popup_width, ui_launch_popup_ypos + ui_launch_popup_height, PALETTE_UI_BLACK);
+	
+	// Draw main box outline
+	gfx_Box(ui_launch_popup_xpos, ui_launch_popup_ypos, ui_launch_popup_xpos + ui_launch_popup_width, ui_launch_popup_ypos + ui_launch_popup_height, PALETTE_UI_LGREY);
+	
+	gfx_Puts(ui_launch_popup_xpos + 50, ui_launch_popup_ypos + 10, ui_font, "Select which file to run:");
+	
+	// Start file text
+	gfx_Puts(ui_launch_popup_xpos + 35, ui_launch_popup_ypos + 35, ui_font, launchdat->start);
+	
+	// Alt start file text
+	gfx_Puts(ui_launch_popup_xpos + 35, ui_launch_popup_ypos + 65, ui_font, launchdat->alt_start);
+	
+	if (toggle == 1){
+		state->selected_start = !state->selected_start;	
+	}
+	
+	if (state->selected_start == 0){
+		// Checkbox for start
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 35, ui_checkbox_bmp);
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 65, ui_checkbox_empty_bmp);		
+	} else {
+		// Checkbox for alt_start
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 35, ui_checkbox_empty_bmp);
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 65, ui_checkbox_bmp);
+	}
+	
+	return UI_OK;
+}
+
 
 int	ui_DrawMainWindow(){
 	// Draw the background of the main user interface window
@@ -801,11 +861,14 @@ int ui_UpdateInfoPane(state_t *state, gamedata_t *gamedata, launchdat_t *launchd
 				// Loaded launch.dat from disk
 				// ======================
 				
-				printf("%s.%d\t Info - metadata: yes\n", __FILE__, __LINE__);
-				printf("%s.%d\t Info - artwork: [%d]\n", __FILE__, __LINE__, state->has_images);
-				printf("%s.%d\t Info - start file: [%s]\n", __FILE__, __LINE__, launchdat->start);
-				printf("%s.%d\t Info - midi: [%d]\n", __FILE__, __LINE__, launchdat->midi);
-				printf("%s.%d\t Info - midi serial: [%s]\n", __FILE__, __LINE__, launchdat->midi_serial);
+				if (UI_VERBOSE){
+					printf("%s.%d\t Info - metadata: yes\n", __FILE__, __LINE__);
+					printf("%s.%d\t Info - artwork: [%d]\n", __FILE__, __LINE__, state->has_images);
+					printf("%s.%d\t Info - start file: [%s]\n", __FILE__, __LINE__, launchdat->start);
+					printf("%s.%d\t Info - alt_start file: [%s]\n", __FILE__, __LINE__, launchdat->alt_start);
+					printf("%s.%d\t Info - midi: [%d]\n", __FILE__, __LINE__, launchdat->midi);
+					printf("%s.%d\t Info - midi serial: [%s]\n", __FILE__, __LINE__, launchdat->midi_serial);
+				}
 				
 				gfx_Bitmap(ui_checkbox_has_metadata_xpos, ui_checkbox_has_metadata_ypos, ui_checkbox_bmp);
 				
@@ -838,11 +901,17 @@ int ui_UpdateInfoPane(state_t *state, gamedata_t *gamedata, launchdat_t *launchd
 				} else {
 					sprintf(info_name, " %s", state->selected_game->name);
 				}
+				if (UI_VERBOSE){
+					printf("%s.%d\t Info - name: %s\n", __FILE__, __LINE__, info_name);
+				}
 				
 				if (launchdat->genre != NULL){
 					sprintf(info_genre, "%s", launchdat->genre);
 				} else {
 					sprintf(info_genre, "N/A");
+				}
+				if (UI_VERBOSE){
+					printf("%s.%d\t Info - genre: %s\n", __FILE__, __LINE__, info_genre);
 				}
 				
 				if (launchdat->series != NULL){
@@ -850,11 +919,17 @@ int ui_UpdateInfoPane(state_t *state, gamedata_t *gamedata, launchdat_t *launchd
 				} else {
 					sprintf(info_series, "N/A");
 				}
+				if (UI_VERBOSE){
+					printf("%s.%d\t Info - series: %s\n", __FILE__, __LINE__, info_series);
+				}
 				
 				if (launchdat->year != 0){
 					sprintf(info_year, "%d", launchdat->year);
 				} else {
 					sprintf(info_year, "N/A");
+				}
+				if (UI_VERBOSE){
+					printf("%s.%d\t Info - year: %s\n", __FILE__, __LINE__, info_year);
 				}
 				
 				if ((strlen(launchdat->developer) > 0) && (strlen(launchdat->publisher) > 0)){
@@ -866,6 +941,9 @@ int ui_UpdateInfoPane(state_t *state, gamedata_t *gamedata, launchdat_t *launchd
 				} else {
 					sprintf(info_company, " N/A");
 				}
+				if (UI_VERBOSE){
+					printf("%s.%d\t Info - company: %s\n", __FILE__, __LINE__, info_company);
+				}
 				
 				// Start file
 				
@@ -873,7 +951,6 @@ int ui_UpdateInfoPane(state_t *state, gamedata_t *gamedata, launchdat_t *launchd
 	
 				sprintf(info_path, " %s", state->selected_game->path);
 			}
-			free(launchdat);
 		} else {
 			// ======================
 			// We can only use the basic directory information

@@ -202,7 +202,8 @@ void pal_SetUI(){
 	pal_Set(PALETTE_UI_BLACK, 0,   0,   0);
 	pal_Set(PALETTE_UI_WHITE, 255, 255, 255);
 	pal_Set(PALETTE_UI_LGREY, 180, 180, 180);
-	pal_Set(PALETTE_UI_DGREY, 90,  90,  90);
+	pal_Set(PALETTE_UI_MGREY, 90,  90,  90);
+	pal_Set(PALETTE_UI_DGREY, 30,  30,  30);
 	pal_Set(PALETTE_UI_RED,   220, 0,   0);
 	pal_Set(PALETTE_UI_GREEN, 0,   220, 0);
 	pal_Set(PALETTE_UI_BLUE,  0,   0,   220);

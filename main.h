@@ -26,6 +26,7 @@ typedef struct state {
 	unsigned int selected_line;			// The line in the page indicating the selected game
 	unsigned int total_pages;			// Total number of pages in the selected_list
 	unsigned int active_pane;
+	unsigned int selected_start;			// Which start file to launch, 0==start, 1==alt_start
 	
 	// Info about selected item
 	int selected_gameid;					// Currently selected gameid

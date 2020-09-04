@@ -65,14 +65,14 @@ gamedir_t * getLastGameDir(gamedir_t *gamedir){
 	return gamedir;
 }
 
-int removeGamedata(gamedata_t *gamedata, int verbose){
+int removeGamedata(gamedata_t *gamedata){
 	/* Remove all nodes of a given imagefile list */
 	
 	gamedata_t * current = gamedata;
 	gamedata_t * next = NULL;
 	
 	if (current->next == NULL){
-		if (verbose){
+		if (DATA_VERBOSE){
 			printf("%s.%d\t Freeing gamedata single object\n", __FILE__, __LINE__);	
 		}
 		free(current);
@@ -85,7 +85,7 @@ int removeGamedata(gamedata_t *gamedata, int verbose){
 			/* There's another element, so free() this one and
 			    then move on to the next */
 			next = current->next;
-			if (verbose){
+			if (DATA_VERBOSE){
 				printf("%s.%d\t Freeing gamedata list object [%s]\n", __FILE__, __LINE__, current->next->name);	
 			}
 			free(current);
@@ -103,38 +103,39 @@ int removeGamedata(gamedata_t *gamedata, int verbose){
 int removeImagefile(imagefile_t *imagefile){
 	/* Remove all nodes of a given imagefile list */
 	
-	imagefile_t * current = imagefile;
-	imagefile_t * next = NULL;
+	imagefile_t *head = imagefile;
+	imagefile_t *next = NULL;
 	
-	if (current != NULL){
+	if (imagefile->next == NULL){
+		return 0;
+	}
 	
-		if (current->next == NULL){
-			//if (verbose){
-			//	printf("%s.%d\t Freeing imagefile single object\n", __FILE__, __LINE__);	
-			//}
-			free(current);
-			imagefile = NULL;
-			return 0;
-		}
-		
-		while(current != NULL){
-			if (current->next != NULL){
-				/* There's another element, so free() this one and
-					then move on to the next */
-				next = current->next;
-				//if (verbose){
-				//	printf("%s.%d\t Freeing imagefile list object [%s]\n", __FILE__, __LINE__, current->next->filename);	
-				//}
-				free(current);
-				current = next;
-			} else {
-				/* There are no more elements linked */
-				free(current);
-				current = NULL;
-				return 0;
+	if (DATA_VERBOSE){
+		printf("%s.%d\t Freeing imagefile list\n", __FILE__, __LINE__);	
+	}
+	if (imagefile->next != NULL){
+		imagefile = imagefile->next;	
+	}
+	while(imagefile != NULL){	
+		if (imagefile->next != NULL){
+			/* There's another element, so free() this one and
+			    then move on to the next */
+			next = imagefile->next;
+			if (DATA_VERBOSE){
+				printf("%s.%d\t Removing image list node [%s]\n", __FILE__, __LINE__, imagefile->filename);	
 			}
+			free(imagefile);
+			imagefile = next;
+		} else {
+			if (DATA_VERBOSE){
+				printf("%s.%d\t Removing final image node [%s]\n", __FILE__, __LINE__, imagefile->filename);	
+			}
+			free(imagefile);
+			imagefile = head;
+			return 0;	
 		}
 	}
+	imagefile = head;
 	return 0;
 }
 
@@ -258,14 +259,15 @@ void launchdataDefaults(launchdat_t *launchdat){
 	
 	memset(launchdat->realname, '\0', strlen(launchdat->realname));
 	memset(launchdat->genre, '\0', strlen(launchdat->genre));
-	launchdat->year = DEFAULT_YEAR;
-	launchdat->midi = 0;
-	launchdat->midi_serial = 0;
 	memset(launchdat->publisher, '\0', strlen(launchdat->publisher));
 	memset(launchdat->developer, '\0', strlen(launchdat->developer));
 	memset(launchdat->start, '\0', strlen(launchdat->start));
+	memset(launchdat->alt_start, '\0', strlen(launchdat->alt_start));
 	memset(launchdat->images, '\0', strlen(launchdat->images));
 	memset(launchdat->series, '\0', strlen(launchdat->series));
+	launchdat->year = DEFAULT_YEAR;
+	launchdat->midi = 0;
+	launchdat->midi_serial = 0;
 }
 
 void configDefaults(config_t *config){

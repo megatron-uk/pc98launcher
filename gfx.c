@@ -455,6 +455,68 @@ int gfx_BoxFill(int x1, int y1, int x2, int y2, unsigned char palette){
         return 0;
 }
 
+int gfx_BoxFillTranslucent(int x1, int y1, int x2, int y2, unsigned char palette){
+        // Draw a box, fill it with a given palette entry - every 2nd pixel, so that
+        // it looks semi-transparent.
+        
+        int row, col;	// x and y position counters
+        int start_addr;	// The first pixel, at x1,y1
+        int temp;		// Holds either x or y, if we need to flip them
+        int step;
+        int flip;		// toggles display of every other pixel on/off
+        
+        // Flip y, if it is supplied reversed
+        if (y1>y2){
+                temp=y1;
+                y1=y2;
+                y2=temp;
+        }
+        // Flip x, if it is supplied reversed
+        if (x1>x2){
+                temp=x1;
+                x1=x2;
+                x2=temp;
+        }
+        // Clip the x range to the edge of the screen
+        if (x2>GFX_COLS){
+                x2 = GFX_COLS - 1;
+        }
+        // Clip the y range to the bottom of the screen
+        if (y2>GFX_ROWS){
+                y2 = GFX_ROWS - 1;
+        }
+        // Get starting pixel address
+        start_addr = gfx_GetXYaddr(x1, y1);
+        if (start_addr < 0){
+                if (GFX_VERBOSE){
+                        printf("%s.%d\t Unable to set VRAM start address\n", __FILE__, __LINE__);
+                }
+                return -1;
+        }
+        // Set starting pixel address
+        vram = vram_buffer + start_addr;
+        
+        // Step to next row in vram
+        step = (GFX_COLS - x2) + (x1 - 1);
+        
+        flip = 0;
+        
+        // Starting from the first row (y1)
+        for(row = y1; row <= y2; row++){
+			// Starting from the first column (x1)
+			for(col = x1; col <= x2; col++){
+				// Only every other pixel
+				if (flip){
+					*vram = palette;
+				}
+				vram++;
+				flip = !flip;
+			}
+			vram += step;
+        }
+        return 0;
+}
+
 int gfx_HasMemoryHole(){
 	// Checks if the memory hole is set at 16MB to enable us to set the VRAM framebuffer
 	

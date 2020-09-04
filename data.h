@@ -76,7 +76,7 @@ typedef struct config {
 // Function prototypes
 gamedata_t *	getLastGamedata(gamedata_t *gamedata);
 imagefile_t *	getLastImage(imagefile_t *imagefile);
-int				removeGamedata(gamedata_t *gamedata, int verbose);
+int			removeGamedata(gamedata_t *gamedata);
 int 			removeImagefile(imagefile_t *imagefile);
 int 			sortGamedata(gamedata_t *gamedata, int verbose);
 int 			swapGamedata(gamedata_t *gamedata1, gamedata_t *gamedata2);

@@ -450,7 +450,6 @@ int main() {
 		gfx_Close();
 		return status;
 	}
-	gfx_Flip();
 	
 	// Browser window
 	status = ui_UpdateBrowserPane(state, gamedata);
@@ -460,7 +459,6 @@ int main() {
 		gfx_Close();
 		return status;
 	}
-	gfx_Flip();
 	
 	// Info panel
 	status = ui_DrawInfoBox();
@@ -471,7 +469,6 @@ int main() {
 		free(gamedata);
 		return status;
 	}
-	gfx_Flip();
 	
 	// Update info with current selection
 	ui_ReselectCurrentGame(state);
@@ -485,6 +482,9 @@ int main() {
 	}
 	gfx_Flip();
 	
+	// Launchdat metadata structure
+	launchdat = (launchdat_t *) malloc(sizeof(launchdat_t));	
+	
 	// ======================
 	//
 	// Main loop here
@@ -494,15 +494,141 @@ int main() {
 	while(exit == 0){
 		user_input = input_get();
 		
+		// Pop-up to confirm launching our choice
+		if (active_pane == CONFIRM_PANE){
+			switch(user_input){
+				case(input_quit):
+					// Exit the application
+					exit = 1;
+					break;
+				case(input_cancel):
+					if (config->verbose){
+						printf("%s.%d\t Closing confirm popup\n", __FILE__, __LINE__);	
+					}
+					active_pane = BROWSER_PANE;
+					// exit and redraw main window
+					if (config->verbose){
+						printf("%s.%d\t Redrawing main screen for Game ID: %d, %s\n", __FILE__, __LINE__, state->selected_gameid, state->selected_game->name);	
+					}
+					ui_DrawMainWindow();
+					ui_UpdateBrowserPane(state, gamedata);
+					ui_DrawInfoBox();
+					ui_ReselectCurrentGame(state);
+					ui_UpdateInfoPane(state, gamedata, launchdat);
+					ui_UpdateBrowserPaneStatus(state);
+					ui_DisplayArtwork(screenshot_file, screenshot_bmp, state, imagefile);
+					gfx_Flip();
+					break;
+				case(input_select):
+					// Quit application and run the file
+					break;
+				default:
+					break;
+			}
+		}
+		
+		// Pop-up to confirm launching a game or configuration utility for a game
+		if (active_pane == LAUNCH_PANE){
+			
+			switch(user_input){
+				case(input_quit):
+					// Exit the application
+					exit = 1;
+					break;
+				case(input_cancel):
+					if (config->verbose){
+						printf("%s.%d\t Closing launcher popup\n", __FILE__, __LINE__);	
+					}
+					active_pane = BROWSER_PANE;
+					// exit and redraw main window
+					if (config->verbose){
+						printf("%s.%d\t Redrawing main screen for Game ID: %d, %s\n", __FILE__, __LINE__, state->selected_gameid, state->selected_game->name);	
+					}
+					ui_DrawMainWindow();
+					ui_UpdateBrowserPane(state, gamedata);
+					ui_DrawInfoBox();
+					ui_ReselectCurrentGame(state);
+					ui_UpdateInfoPane(state, gamedata, launchdat);
+					ui_UpdateBrowserPaneStatus(state);
+					ui_DisplayArtwork(screenshot_file, screenshot_bmp, state, imagefile);
+					gfx_Flip();
+					break;
+				case(input_up):
+					// FLip between start files
+					ui_DrawLaunchPopup(state, gamedata, launchdat, 1);
+					gfx_Flip();
+					break;
+				case(input_down):
+					// FLip between start files
+					ui_DrawLaunchPopup(state, gamedata, launchdat, 1);
+					gfx_Flip();
+					break;
+				case(input_select):
+					// Quit application and run the selected start file
+					ui_DrawConfirmPopup(state, gamedata, launchdat);
+					gfx_Flip();
+					break;
+				default:
+					break;
+			}
+		}
+		
+		// Main browser window, listing all of our games
 		if (active_pane == BROWSER_PANE){
 			switch(user_input){
 				case(input_quit):
 					// Exit the application
 					exit = 1;
 					break;
+				case(input_select):
+					// Start a game or launch a config tool
+					if (state->selected_game->has_dat){
+						if (config->verbose){
+							printf("%s.%d\t Attempting launch...\n", __FILE__, __LINE__);	
+						}
+						
+						if (
+								((launchdat->start != NULL) && (strlen(launchdat->start) > 0)) && 
+								((launchdat->alt_start != NULL) && (strlen(launchdat->alt_start) > 0))
+						){
+							// Start and alt_start defined
+							if (config->verbose){
+								printf("%s.%d\t - Action: Drawing launcher popup\n", __FILE__, __LINE__);	
+							}
+							active_pane = LAUNCH_PANE;
+							ui_DrawLaunchPopup(state, gamedata, launchdat, 0);
+							gfx_Flip();
+							
+						} else if ((launchdat->start != NULL) && (strcmp(launchdat->start, "") != 0)){
+							// Start defined only
+							if (config->verbose){
+								printf("%s.%d\t - Action: Drawing confirmation popup\n", __FILE__, __LINE__);	
+							}
+							active_pane = CONFIRM_PANE;
+							ui_DrawConfirmPopup(state, gamedata, launchdat);
+							gfx_Flip();
+							
+						} else if ((launchdat->alt_start != NULL) && (strcmp(launchdat->alt_start, "") != 0)){
+							// alt start defined only
+							if (config->verbose){
+								printf("%s.%d\t - Action: Closing to start game (alt start)\n", __FILE__, __LINE__);	
+							}
+							active_pane = CONFIRM_PANE;
+							ui_DrawConfirmPopup(state, gamedata, launchdat);
+							gfx_Flip();
+							
+						} else {
+							// Nothing defined
+							// do nothing
+							if (config->verbose){
+								printf("%s.%d\t - Action: No start file, no action\n", __FILE__, __LINE__);	
+							}
+						}
+					}
+					break;
 				case(input_up):
 					// Up current list by one row
-					if (state->selected_line == 1){
+					if (state->selected_line == 0){
 						if (state->selected_page == 1){
 							// Loop back to last page
 							state->selected_page = state->total_pages;
@@ -522,7 +648,7 @@ int main() {
 					break;
 				case(input_down):
 					// Down current list by one row
-					if ((state->selected_line == ui_browser_max_lines) || (state->selected_line == (state->selected_max - 1))){
+					if ((state->selected_line == ui_browser_max_lines - 1) || (state->selected_line == (state->selected_max - 1))){
 						if (state->selected_page == state->total_pages){
 							// Go to first page
 							state->selected_page = 1;
@@ -543,12 +669,31 @@ int main() {
 				case(input_scroll_up):
 					// Scroll list up by one page
 					// Detect if selected game has changed
+					if (state->selected_page == 1){
+						// Loop back to last page
+						state->selected_page = state->total_pages;
+					} else {
+						// Go back one page
+						state->selected_page--;
+					}
+					state->selected_line = 0;
 					ui_ReselectCurrentGame(state);
+					ui_UpdateBrowserPane(state, gamedata);
 					break;
 				case(input_scroll_down):
 					// Scroll list down by one page
 					// Detect if selected game has changed
+					if (state->selected_page == state->total_pages){
+						// Go to first page
+						state->selected_page = 1;
+					} else {
+						// Go forward one page
+						state->selected_page++;
+					}
+					// Reset to line 1 of the new page
+					state->selected_line = 0;	
 					ui_ReselectCurrentGame(state);
+					ui_UpdateBrowserPane(state, gamedata);
 					break;
 				case(input_left):
 					// Cycle left through artwork
@@ -585,10 +730,16 @@ int main() {
 				// ======================
 				// Destroy current list of artwork
 				// ======================
-				if (has_images){
+				if (state->has_images == 1){
+					if (config->verbose){
+						printf("%s.%d\t Previous entry had images, clearing list\n", __FILE__, __LINE__);
+					}
 					imagefile = imagefile_head;
 					removeImagefile(imagefile);
 					if (imagefile != NULL){
+						if (config->verbose){
+							printf("%s.%d\t Freeing memory from previous image list\n", __FILE__, __LINE__);
+						}
 						free(imagefile);
 					}
 				}
@@ -600,8 +751,11 @@ int main() {
 				// ======================
 				// Destroy previous launch.dat
 				// ======================
-				if (has_launchdat){
+				if (state->has_launchdat){
 					if (launchdat != NULL){
+						if (config->verbose){
+							printf("%s.%d\t Previous entry had metadata, freeing memory\n", __FILE__, __LINE__);
+						}
 						free(launchdat);
 					}
 				}
@@ -626,9 +780,8 @@ int main() {
 				} else {
 					if (state->selected_game->has_dat){
 						if (config->verbose){
-							printf("%s.%d\t Loading metadata from disk for [%s]\n", __FILE__, __LINE__, state->selected_game->name);
+							printf("%s.%d\t Allocating memory and loading metadata for [%s]\n", __FILE__, __LINE__, state->selected_game->name);
 						}
-						
 						launchdat = (launchdat_t *) malloc(sizeof(launchdat_t));	
 						status = getLaunchdata(state->selected_game, launchdat);
 						if (status != 0){
@@ -646,6 +799,9 @@ int main() {
 					// Load list of artwork
 					// ======================
 					if (state->has_launchdat){
+						if (config->verbose){
+							printf("%s.%d\t Allocating memory for image list\n", __FILE__, __LINE__);
+						}
 						imagefile = (imagefile_t *) malloc(sizeof(imagefile_t));
 						imagefile->next = NULL;
 						imagefile_head = imagefile;
@@ -681,45 +837,11 @@ int main() {
 					ui_DisplayArtwork(screenshot_file, screenshot_bmp, state, imagefile);
 					gfx_Flip();
 				}
+				if (config->verbose){
+					printf("%s.%d\t New game successfully loaded\n", __FILE__, __LINE__);
+				}
 			}
 		}
-		
-		// ========================================
-		//
-		// After all user input is handled...
-		// Load screenshot for current selected game asynchronously 
-		// Ok, well, not really, just one line at a time so that it looks like it
-		// is happening in the background.
-		//		
-		// Only do this if the current game has a screenshot(s)
-		//
-		// ========================================
-		/*
-		if ((has_screenshot) && (screenshot_bmp_state->rows_remaining > 0)){
-			//status = gfx_BitmapAsync(ui_artwork_xpos, ui_artwork_ypos, screenshot_bmp, screenshot_file, screenshot_bmp_state);
-			gfx_Flip();
-			switch(status){
-				case(GFX_ERR_UNSUPPORTED_BPP):
-					ui_StatusMessage("Artwork is an unsupported colour depth.");
-					has_screenshot = 0;
-					break;
-				case(GFX_ERR_MISSING_BMPHEADER):
-					ui_StatusMessage("No image header supplied to async display.");
-					has_screenshot = 0;
-					break;
-				case(BMP_ERR_READ):
-					ui_StatusMessage("Error seeking within image file.");
-					has_screenshot = 0;
-					break;
-				case(0):
-					break;
-				default:
-					ui_StatusMessage("Unhandled return code from async display.");
-					has_screenshot = 0;
-					break;
-			}
-		}
-		*/
 	}
 	
 	ui_Close();
