@@ -19,7 +19,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef __HAS_DATA
 #include "data.h"
+#define __HAS_DATA
+#endif
 #include "fstools.h"
 #include "gfx.h"
 #include "input.h"
@@ -83,6 +86,8 @@ int main() {
 	verbose = 1;							// Initial debug/verbose setting; overidden from INIFILE, if set
 	
 	printf("%s starting...\n", MY_NAME);
+	
+	//zeroRunBat();
 	
 	/* ************************************** */
 	/* Create a new empty gamedata entry */
@@ -500,6 +505,7 @@ int main() {
 				case(input_quit):
 					// Exit the application
 					exit = 1;
+					zeroRunBat();
 					break;
 				case(input_cancel):
 					if (config->verbose){
@@ -521,6 +527,11 @@ int main() {
 					break;
 				case(input_select):
 					// Quit application and run the file
+					if (config->verbose){
+						printf("%s.%d\t Writing run.bat\n", __FILE__, __LINE__);	
+					}
+					writeRunBat(state, launchdat);
+					exit = 1;
 					break;
 				default:
 					break;
@@ -534,6 +545,7 @@ int main() {
 				case(input_quit):
 					// Exit the application
 					exit = 1;
+					zeroRunBat();
 					break;
 				case(input_cancel):
 					if (config->verbose){
@@ -565,6 +577,10 @@ int main() {
 					break;
 				case(input_select):
 					// Quit application and run the selected start file
+					if (config->verbose){
+						printf("%s.%d\t Opening confirmation popup\n", __FILE__, __LINE__);	
+					}
+					active_pane = CONFIRM_PANE;
 					ui_DrawConfirmPopup(state, gamedata, launchdat);
 					gfx_Flip();
 					break;
@@ -579,6 +595,7 @@ int main() {
 				case(input_quit):
 					// Exit the application
 					exit = 1;
+					zeroRunBat();
 					break;
 				case(input_select):
 					// Start a game or launch a config tool
@@ -596,6 +613,7 @@ int main() {
 								printf("%s.%d\t - Action: Drawing launcher popup\n", __FILE__, __LINE__);	
 							}
 							active_pane = LAUNCH_PANE;
+							state->selected_start = 0;
 							ui_DrawLaunchPopup(state, gamedata, launchdat, 0);
 							gfx_Flip();
 							
@@ -605,6 +623,7 @@ int main() {
 								printf("%s.%d\t - Action: Drawing confirmation popup\n", __FILE__, __LINE__);	
 							}
 							active_pane = CONFIRM_PANE;
+							state->selected_start = 0;
 							ui_DrawConfirmPopup(state, gamedata, launchdat);
 							gfx_Flip();
 							
@@ -614,6 +633,7 @@ int main() {
 								printf("%s.%d\t - Action: Closing to start game (alt start)\n", __FILE__, __LINE__);	
 							}
 							active_pane = CONFIRM_PANE;
+							state->selected_start = 1;
 							ui_DrawConfirmPopup(state, gamedata, launchdat);
 							gfx_Flip();
 							

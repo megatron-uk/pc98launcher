@@ -18,6 +18,7 @@
 #define SAVEFILE				"launcher.txt"		// A text file holding the list of all found directories
 #define INIFILE				"launcher.ini"		// the ini file holding settings for the main application
 #define GAMEDAT				"launch.dat"			// the name of the data file in the game dir to load
+#define RUNBAT				"run.bat"			// the name of the batch file which will contain the path to the chosen game exe
 #define DEFAULT_GENRE		"Unknown Genre"		// Default genre
 #define DEFAULT_YEAR 		0					// Default year
 #define DEFAULT_START		"!start.bat"			// Default replacement for !start.bat is... erm... !start.bat

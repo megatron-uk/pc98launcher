@@ -20,7 +20,10 @@
 #include <stdlib.h>
 #include <dirent.h>
 
+#ifndef __HAS_DATA
 #include "data.h"
+#define __HAS_DATA
+#endif
 #include "fstools.h"
 
 char drvNumToLetter(int drive_number){
@@ -267,4 +270,61 @@ int findDirs(char *path, gamedata_t *gamedata, int startnum, config_t *config){
 	
 	//free(launchdat);
 	return found;
+}
+
+int zeroRunBat(){
+	// Empty contents of the run.bat file
+	FILE *runbat;
+	
+	runbat = fopen(RUNBAT, "w");
+	fclose(runbat);
+	
+	return 0;
+}
+
+int writeRunBat(state_t *state, launchdat_t *launchdat){
+	// Write a RUN.BAT file in our application directory to launch the state->selected_start exe
+	// from the launchdat file at application exit.
+	
+	char buf[255];
+	FILE *runbat;
+	
+	runbat = fopen(RUNBAT, "w");
+	if (runbat != NULL){
+		if (FS_VERBOSE){
+			printf("%s.%d\t Opened %s to set game exe\n", __FILE__, __LINE__, RUNBAT);
+		}
+	} else {
+		if (FS_VERBOSE){
+			printf("%s.%d\t Unable to write to %s to call game exe\n", __FILE__, __LINE__, RUNBAT);
+		}
+		return -1;
+	}
+	
+	// Change to game drive
+	fputc(state->selected_game->drive, runbat);
+	fputs(":", runbat);
+	fputs("\n", runbat);
+	
+	// CD to game directory
+	fputs("cd ", runbat);
+	fputs(state->selected_game->path, runbat);
+	fputs("\n", runbat);
+	
+	// Call selected start file
+	if (state->selected_start == 0){
+		fputs(launchdat->start, runbat);
+	} else {
+		fputs(launchdat->alt_start, runbat);
+	}
+	fputs("\n", runbat);
+	
+	// Return to original directory
+	fputs("cd -", runbat);
+	fputs("\n", runbat);
+	
+	// Close run.bat
+	fclose(runbat);
+	
+	return 0;
 }

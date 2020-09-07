@@ -21,9 +21,15 @@
 #include <dos.h>
 
 #include "ini.h"
+#ifndef __HAS_DATA
 #include "data.h"
+#define __HAS_DATA
+#endif
 #include "fstools.h"
+#ifndef __HAS_MAIN
 #include "main.h"
+#define __HAS_MAIN
+#endif
 
 gamedata_t * getGameid(int gameid, gamedata_t *gamedata){
 	// Find a given gameid from the list	

@@ -15,7 +15,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//#include "data.h"
+#ifndef __HAS_DATA
+#include "data.h"
+#define __HAS_DATA
+#endif
+#ifndef __HAS_MAIN
+#include "main.h"
+#define __HAS_MAIN
+#endif
 
 // Constants
 #define FS_VERBOSE		1		// Enable/disable fstools verbose/debug output
@@ -30,3 +37,5 @@ int 		drvLetterToNum(char drive_letter);
 char		drvNumToLetter(int drive_number);
 int 		findDirs(char *path, gamedata_t *gamedata, int startnum, config_t *config);
 int 		isDir(char *path);
+int 		writeRunBat(state_t *state, launchdat_t *launchdat);
+int 		zeroRunBat();
