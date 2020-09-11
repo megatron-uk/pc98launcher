@@ -14,6 +14,15 @@ Specifically, it is written to use the 256 colour graphics hardware found on lat
    * It can export an audit file of all the found games
    * It can launch any game for which a start file is either found (e.g. start.bat), or which has been defined in metadata (e.g. run.com, go.exe, etc)
 
+## Sample Use
+
+The image below takes you to a sample movie of the launcher application in action via **YouTube**:
+
+[![PC98Launcher in action](http://img.youtube.com/vi/ItZVIFY-c10/0.jpg)](https://
+www.youtube.com/watch?v=ItZVIFY-c10)
+
+*Click to the video above to see the launcher in action*
+
 ## What does it look like?
 
 Starting up and scanning for games:
@@ -47,6 +56,7 @@ The directory should have the following after unzipping:
 
    * launcher.exe
    * launcher.ini
+   * l.bat
    * dpmi.exe
    * go32-v2.exe
    * assets\font8x16.bmp
@@ -57,9 +67,9 @@ You don't need to set anything in config.sys or autoexec.bat.
 
 Edit launcher.ini with a normal text editor and set the `gamedirs` variable to all of the locations of games on your hard drive(s).
 
-If you have your games under folders such as `A:\Games\Arkanoid` and `A:\Games\Dark` for example, then you only need to add the path `A:\Games`. You may add up to 16 comma seperated game paths.
+If you have your games under folders such as `A:\Games\Arkanoid` and `A:\Games\Dark` for example, then you only need to add the path `A:\Games`. You may add up to 16 comma seperated game paths, and these can be for different drives if you wish.
 
-Just run `dpmi.exe` and then `launcher.exe` to start the user interface. Alternatively, add those two commands to the end of your autoexec.bat to have the interface start automatially at boot.
+<u>Just run `l.bat` to start the application.</u>
 
 
 #### Binaries
@@ -100,6 +110,8 @@ year=
 genre=
 images=
 series=
+start=
+alt_start=
 
 ```
 
@@ -113,6 +125,10 @@ Images will be shown in the order they are listed, so place the image you want s
 
 The `series` field is a text name of the larger game series in which the game is based, useful for those games in which there are more than one game (Doom and Doom II, for example). You can use the __filter__ option within the application to find all games within the same series, as long as they are tagged up with the correct metadata.
 
+The `genre` field notes the type of gameplay within the game (RPG, Action, Sports, Puzzle, etc). As with `series` you can use the application __filter__ facility to restrict the display of games to just one type of genre if desired. Again, you need to set this metadata in order to make use of it within the interface, otherwise it will be treated as blank.
+
+Finally, the `start` and `alt_start` data determines which exe should be launched when the game is selected. By convention I would reccomend the main game executable or batch file is set for the `start` value, and any stand-alone cinematics, or sound configuration utlity is set for the `alt_start` value.
+
 An example is shown below:
 
 ```
@@ -125,7 +141,8 @@ year=1996
 genre=Strategy
 images=cover.bmp,screen1.bmp,screen2.bmp,box.bmp
 series=Power Dolls
-
+start=game.exe
+alt_start=config.exe
 ```
 
 
@@ -139,7 +156,7 @@ You can use any image processing application you want, but it must output images
    * Uncompressed
    * 8bpp, indexed/paletted colour
    * Maximum of 208 colours
-   * No larger than 320x200 (but they may be smaller in either dimension, if desireable, e.g. for boxart)
+   * No larger than 320x200 (but they may be smaller in either dimension, if desireable, e.g. for vertical boxart)
 
 
 If you have the [ImageMagick](https://www.imagemagick.org/) tools available on your system, you can batch convert files using the following syntax:
