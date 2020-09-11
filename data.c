@@ -301,10 +301,14 @@ int getLaunchdata(gamedata_t *gamedata, launchdat_t *launchdat){
 	
 	launchdataDefaults(launchdat);
 	if (ini_parse(filepath, launchdatHandler, launchdat) < 0) {
-		//printf("%s.%d\t Cannot load %s\n", __FILE__, __LINE__, filepath);
+		if (DATA_VERBOSE){
+			printf("%s.%d\t Cannot load %s\n", __FILE__, __LINE__, filepath);
+		}
 		return -1;
 	} else {
-		//printf("%s.%d\t Loaded %s\n", __FILE__, __LINE__, filepath);
+		if (DATA_VERBOSE){
+			printf("%s.%d\t Loaded %s\n", __FILE__, __LINE__, filepath);
+		}
 		return 0;
 	}
 }

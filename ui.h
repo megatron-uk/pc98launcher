@@ -181,7 +181,10 @@
 #define INFO_PANE				0x03
 #define LAUNCH_PANE				0x04
 #define CONFIRM_PANE				0x05
-#define PANE_MAX					0x05
+#define FILTER_PRE_PANE			0x06
+#define FILTER_PANE				0x07
+#define HELP_PANE				0x08
+#define PANE_MAX					0x08
 
 // Functions
 void	ui_Init();
@@ -190,7 +193,8 @@ void	ui_Close();
 // These draw the basic UI elements
 int		ui_DrawInfoBox();
 int		ui_DrawConfirmPopup(state_t *state, gamedata_t *gamedata, launchdat_t *launchdat);
-int		ui_DrawLaunchPopup(state_t *state, gamedata_t *gamedata, launchdat_t *launchdat, unsigned int toggle);
+int		ui_DrawFilterPrePopup(state_t *state, int toggle);
+int		ui_DrawLaunchPopup(state_t *state, gamedata_t *gamedata, launchdat_t *launchdat, int toggle);
 int		ui_DrawMainWindow();
 int		ui_DrawSplash();
 int		ui_DrawSplashProgress();

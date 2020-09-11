@@ -185,6 +185,142 @@ int	ui_DrawConfirmPopup(state_t *state, gamedata_t *gamedata, launchdat_t *launc
 	return UI_OK;
 }
 
+int ui_DrawFilterPrePopup(state_t *state, int toggle){
+	// Draw a popup that allows the user to toggle filter mode between genre, series and off
+
+	// Draw drop-shadow
+	gfx_BoxFillTranslucent(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 10, ui_launch_popup_xpos + 10 + ui_launch_popup_width, ui_launch_popup_ypos + 10 + ui_launch_popup_height + 30, PALETTE_UI_DGREY);
+	
+	// Draw main box
+	gfx_BoxFill(ui_launch_popup_xpos, ui_launch_popup_ypos, ui_launch_popup_xpos + ui_launch_popup_width, ui_launch_popup_ypos + ui_launch_popup_height + 30, PALETTE_UI_BLACK);
+	
+	// Draw main box outline
+	gfx_Box(ui_launch_popup_xpos, ui_launch_popup_ypos, ui_launch_popup_xpos + ui_launch_popup_width, ui_launch_popup_ypos + ui_launch_popup_height + 30, PALETTE_UI_LGREY);
+	
+	// Box title
+	gfx_Puts(ui_launch_popup_xpos + 90, ui_launch_popup_ypos + 10, ui_font, "Enable Filter?");
+	// No filter text
+	gfx_Puts(ui_launch_popup_xpos + 35, ui_launch_popup_ypos + 35, ui_font, "No filter - Show all games");
+	// Genre filter text
+	gfx_Puts(ui_launch_popup_xpos + 35, ui_launch_popup_ypos + 65, ui_font, "By Genre");
+	// Series filter text
+	gfx_Puts(ui_launch_popup_xpos + 35, ui_launch_popup_ypos + 95, ui_font, "By Series");
+	
+	// Toggle which entry is selected
+	if (toggle == 1){
+		state->selected_filter++;	
+	} 
+	if (toggle == -1){
+		state->selected_filter--;	
+	}
+	
+	// Detect wraparound
+	if (state->selected_filter >= FILTER_SERIES){
+		state->selected_filter = FILTER_SERIES;
+	}
+	if (state->selected_filter <= FILTER_NONE){
+		state->selected_filter = FILTER_NONE;
+	}
+	
+	if (state->selected_filter == FILTER_NONE){
+		// none
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 35, ui_checkbox_bmp);
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 65, ui_checkbox_empty_bmp);
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 95, ui_checkbox_empty_bmp);
+	}
+	if (state->selected_filter == FILTER_GENRE){
+		// genre
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 35, ui_checkbox_empty_bmp);
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 65, ui_checkbox_bmp);
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 95, ui_checkbox_empty_bmp);
+	}
+	if (state->selected_filter == FILTER_SERIES){
+		// series
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 35, ui_checkbox_empty_bmp);
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 65, ui_checkbox_empty_bmp);
+		gfx_Bitmap(ui_launch_popup_xpos + 10, ui_launch_popup_ypos + 95, ui_checkbox_bmp);
+	}
+	
+	return UI_OK;
+}
+
+int ui_DrawFilterPopup(state_t *state, int toggle){
+	// Draw a page of filter choices for the user to select
+	
+	int i;
+	int status;
+	
+	// Draw drop-shadow
+	gfx_BoxFillTranslucent(40, 50, GFX_COLS - 30, GFX_ROWS - 20, PALETTE_UI_DGREY);
+	
+	// Draw main box
+	gfx_BoxFill(30, 40, GFX_COLS - 40, GFX_ROWS - 40, PALETTE_UI_BLACK);
+	
+	// Draw main box outline
+	gfx_Box(30, 40, GFX_COLS - 40, GFX_ROWS - 40, PALETTE_UI_LGREY);
+	
+	// Box title
+	if (state->selected_filter == FILTER_GENRE){
+		gfx_Puts(240, 45, ui_font, "Select Genre");
+	}
+	if (state->selected_filter == FILTER_SERIES){
+		gfx_Puts(240, 45, ui_font, "Select Series");
+	}
+	
+	if (toggle == -1){
+		state->selected_filter_string--;
+	}
+	if (toggle == 1){
+		state->selected_filter_string++;
+	}
+	
+	if (state->selected_filter_string < 0){
+		state->selected_filter_string = 0;
+	}
+	if (state->selected_filter_string > state->available_filter_strings){
+		state->selected_filter_string = state->available_filter_strings;
+	}
+	
+	for(i=0; i<MAXIMUM_FILTER_STRINGS; i++){
+		
+		if ((state->filter_strings[i] != NULL) && (strcmp(state->filter_strings[i], "") != 0)){
+		
+			// Column 1
+			if (i < 11){
+				if (i == state->selected_filter_string){
+					gfx_Bitmap(45, 70 + (i * 25), ui_checkbox_bmp);
+				} else {
+					gfx_Bitmap(45, 70 + (i * 25), ui_checkbox_empty_bmp);
+				}
+				gfx_Puts(70, 70 + (i * 25), ui_font, state->filter_strings[i]);
+			}
+			
+			// Column 2
+			if ((i >= 11) && (i < 22)){
+				if (i == state->selected_filter_string){
+					gfx_Bitmap(230, 70 + ((i - 11) * 25), ui_checkbox_bmp);
+				} else {
+					gfx_Bitmap(230, 70 + ((i - 11) * 25), ui_checkbox_empty_bmp);
+				}
+				gfx_Puts(255, 70 + ((i - 11) * 25), ui_font, state->filter_strings[i]);
+			}
+			
+			// Column 3
+			if (i >= 22){
+				if (i == state->selected_filter_string){
+					gfx_Bitmap(420, 70 + ((i - 22) * 25), ui_checkbox_bmp);
+				} else {
+					gfx_Bitmap(420, 70 + ((i - 22) * 25), ui_checkbox_empty_bmp);
+				}
+				gfx_Puts(445, 70 + ((i - 22) * 25), ui_font, state->filter_strings[i]);
+			}	
+		}
+	}
+	
+	return UI_OK;
+	
+}
+
 int ui_DrawInfoBox(){
 	// Draw a fresh info panel
 	
@@ -206,7 +342,7 @@ int ui_DrawInfoBox(){
 	return UI_OK;
 }
 
-int	ui_DrawLaunchPopup(state_t *state, gamedata_t *gamedata, launchdat_t *launchdat, unsigned int toggle){
+int	ui_DrawLaunchPopup(state_t *state, gamedata_t *gamedata, launchdat_t *launchdat, int toggle){
 	// Draw the popup window that lets us select from the main or alternate start file
 	// in order to launch a game
 	
@@ -826,6 +962,12 @@ int ui_UpdateInfoPane(state_t *state, gamedata_t *gamedata, launchdat_t *launchd
 	gfx_Bitmap(ui_info_genre_xpos, ui_info_genre_ypos, ui_genre_bmp);
 	// series
 	gfx_Bitmap(ui_info_series_xpos, ui_info_series_ypos, ui_series_bmp);
+	
+	if (state->selected_filter != 0){
+		gfx_Bitmap(ui_checkbox_filter_active_xpos, ui_checkbox_filter_active_ypos, ui_checkbox_bmp);
+	} else {
+		gfx_Bitmap(ui_checkbox_filter_active_xpos, ui_checkbox_filter_active_ypos, ui_checkbox_empty_bmp);	
+	}
 	
 	if (UI_VERBOSE){
 		printf("%s.%d\t Selected State\n", __FILE__, __LINE__);

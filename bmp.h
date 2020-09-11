@@ -15,30 +15,30 @@
 #define WIDTH_OFFSET 			0x0012 // Where we can find the x-axis pixel size
 #define HEIGHT_OFFSET 			0x0016 // Where we can find the y-axis pixel size
 #define BITS_PER_PIXEL_OFFSET	0x001C // Where we can find the bits-per-pixel number
-#define COMPRESS_OFFSET		0x001E // Where we can find the compression flag
+#define COMPRESS_OFFSET			0x001E // Where we can find the compression flag
 #define COLOUR_NUM_OFFSET		0x002E // Where we can find the numbers of colours used in the image
 #define COLOUR_PRI_OFFSET		0x0032 // Where we can find the number of the 'important' colour ???
 #define PALETTE_OFFSET			0x0036 // Where the colour palette starts, for <=8bpp images.
 #define HEADER_SIZE 				14
 #define INFO_HEADER_SIZE 		40
-#define BMP_1BPP				1
-#define BMP_4BPP				4
-#define BMP_8BPP				8	
+#define BMP_1BPP					1
+#define BMP_4BPP					4
+#define BMP_8BPP					8	
 #define BMP_16BPP				16
-#define BMP_UNCOMPRESSED		0
-#define BMP_VERBOSE			0 // Enable BMP specific debug/verbose output
+#define BMP_UNCOMPRESSED			0
+#define BMP_VERBOSE				0 // Enable BMP specific debug/verbose output
 #define BMP_OK					0 // BMP loaded and decode okay
 #define BMP_ERR_NOFILE			-1 // Cannot find file
-#define BMP_ERR_SIZE			-2 // Height/Width outside bounds
-#define BMP_ERR_MEM			-3 // Unable to allocate memory
+#define BMP_ERR_SIZE				-2 // Height/Width outside bounds
+#define BMP_ERR_MEM				-3 // Unable to allocate memory
 #define BMP_ERR_BPP				-4 // Unsupported colour depth/BPP
-#define BMP_ERR_READ			-5 // Error reading or seeking within file
-#define BMP_ERR_COMPRESSED	-6 // We dont support comrpessed BMP files
+#define BMP_ERR_READ				-5 // Error reading or seeking within file
+#define BMP_ERR_COMPRESSED		-6 // We dont support comrpessed BMP files
 #define BMP_ERR_FONT_WIDTH		-7 // We dont support fonts of this width
-#define BMP_ERR_FONT_HEIGHT	-8 // We dont support fonts of this height
+#define BMP_ERR_FONT_HEIGHT		-8 // We dont support fonts of this height
 #define BMP_FONT_MAX_WIDTH		8
-#define BMP_FONT_MAX_HEIGHT	16
-#define BMP_FONT_PLANES		4 // Number of colour planes per pixel
+#define BMP_FONT_MAX_HEIGHT		16
+#define BMP_FONT_PLANES			4 // Number of colour planes per pixel
 
 // ============================
 //

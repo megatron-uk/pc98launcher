@@ -24,6 +24,7 @@
 #define __HAS_DATA
 #endif
 #include "fstools.h"
+#include "filter.h"
 #include "gfx.h"
 #include "input.h"
 #include "palette.h"
@@ -126,8 +127,11 @@ int main() {
 	state->selected_gameid = -1;		// Current selected game
 	state->has_images = 0;			
 	state->has_launchdat = 0;
+	state->selected_filter = 0;
+	state->selected_start = 0;
+	state->selected_filter_string = 0;
 	state->active_pane = BROWSER_PANE;
-	for(i =0; i <selection_list_size; i++){
+	for(i =0; i <SELECTION_LIST_SIZE; i++){
 		state->selected_list[i] = NULL;
 	}
 	
@@ -365,31 +369,9 @@ int main() {
 	if (gamedata->next != NULL){
 		gamedata = gamedata->next;
 	}
-	i= 0;
-	gamedata_head = gamedata; // Store first item
-	if (config->verbose){
-		printf("%s.%d\t Building initial selection list\n", __FILE__, __LINE__);
-	}
-	while(gamedata != NULL){
-		if (config->verbose){
-			printf("%s.%d\t Info - adding Game ID: [%d], %s\n", __FILE__, __LINE__, gamedata->gameid, gamedata->name);
-		}
-		state->selected_list[i] = gamedata->gameid;
-		gamedata = gamedata->next;
-		i++;
-	}
-	gamedata = gamedata_head;	// Restore first item
-	state->selected_max = i; 	// Number of items in selection list
-	state->selected_page = 1;	// Start on page 1
-	state->selected_line = 0;	// Start on line 0
-	state->total_pages = 0;		
-	state->selected_gameid = state->selected_list[0]; 	// Game is that 0th element of the selection list
-	state->selected_game = getGameid(state->selected_gameid, gamedata);
-	for(i = 0; i <= state->selected_max ; i++){
-		if (i % ui_browser_max_lines == 0){
-			state->total_pages++;
-		}
-	}
+	
+	// Apply no-filtering to list, show all games
+	status = filter_None(state, gamedata);
 	if (config->verbose){
 		printf("%s.%d\t Initial selection state\n", __FILE__, __LINE__);
 		printf("%s.%d\t Info - selected_max: %d\n", __FILE__, __LINE__, state->selected_max);
@@ -499,7 +481,11 @@ int main() {
 	while(exit == 0){
 		user_input = input_get();
 		
-		// Pop-up to confirm launching our choice
+		// ==================================================
+		//
+		// Pop-up to confirm launching our single choice
+		//
+		// ==================================================
 		if (active_pane == CONFIRM_PANE){
 			switch(user_input){
 				case(input_quit):
@@ -537,8 +523,12 @@ int main() {
 					break;
 			}
 		}
-		
-		// Pop-up to confirm launching a game or configuration utility for a game
+		// ==================================================
+		//
+		// Pop-up to confirm which of several choices we want
+		// to launch.
+		//
+		// ==================================================
 		if (active_pane == LAUNCH_PANE){
 			
 			switch(user_input){
@@ -589,13 +579,230 @@ int main() {
 			}
 		}
 		
+		// ==================================================
+		//
+		// This window shows general help and useage text.
+		//
+		// ==================================================
+		if (active_pane == HELP_PANE){
+			switch(user_input){
+				case(input_quit):
+					// Exit the application
+					exit = 1;
+					zeroRunBat();
+					break;
+				default:
+					break;
+			}
+		}
+		
+		// ==================================================
+		//
+		// This window lets us decide what type of 
+		// filter to apply, or to disable the active filter:
+		//
+		// Genre filter, Series filter, Disable filter
+		//
+		// ==================================================
+		if (active_pane == FILTER_PRE_PANE){
+			switch(user_input){
+				case(input_quit):
+					// Exit the application
+					exit = 1;
+					zeroRunBat();
+					break;
+				case(input_up):
+					if (config->verbose){
+						printf("%s.%d\t Toggle filter type selection up\n", __FILE__, __LINE__);	
+					}
+					ui_DrawFilterPrePopup(state, -1);
+					gfx_Flip();
+					break;
+				case(input_down):
+					if (config->verbose){
+						printf("%s.%d\t Toggle filter type selection down\n", __FILE__, __LINE__);	
+					}
+					ui_DrawFilterPrePopup(state, 1);
+					gfx_Flip();
+					break;
+				case(input_select):
+					// Choose the highlighted selection
+					
+					if (state->selected_filter == FILTER_NONE){
+						// Reselect all games
+						status = filter_None(state, gamedata);
+						
+						if (config->verbose){
+							printf("%s.%d\t Closing filter popup(s)\n", __FILE__, __LINE__);	
+						}
+						active_pane = BROWSER_PANE;
+						// exit and redraw main window
+						if (config->verbose){
+							printf("%s.%d\t Redrawing main screen for Game ID: %d, %s\n", __FILE__, __LINE__, state->selected_gameid, state->selected_game->name);	
+						}
+						ui_DrawMainWindow();
+						ui_UpdateBrowserPane(state, gamedata);
+						ui_DrawInfoBox();
+						ui_ReselectCurrentGame(state);
+						ui_UpdateInfoPane(state, gamedata, launchdat);
+						ui_UpdateBrowserPaneStatus(state);
+						ui_DisplayArtwork(screenshot_file, screenshot_bmp, state, imagefile);
+						gfx_Flip();
+						user_input = input_get();
+					} else {
+						if (config->verbose){
+							printf("%s.%d\t Launching filter popup\n", __FILE__, __LINE__);	
+						}
+						
+						// Set filter pane as next one to display
+						active_pane = FILTER_PANE;
+						
+						// Generate the list of keywords
+						if (state->selected_filter == FILTER_GENRE){
+							filter_GetGenres(state, gamedata);
+						}
+						
+						if (state->selected_filter == FILTER_SERIES){
+							filter_GetSeries(state, gamedata);
+						}
+						
+						// Bring up the filter keyword selection pane
+						ui_DrawFilterPopup(state, 0);
+						gfx_Flip();
+						user_input = input_get();
+					}
+					break;
+				case(input_cancel):
+					if (config->verbose){
+						printf("%s.%d\t Closing filter type popup\n", __FILE__, __LINE__);	
+					}
+					active_pane = BROWSER_PANE;
+					// exit and redraw main window
+					if (config->verbose){
+						printf("%s.%d\t Redrawing main screen for Game ID: %d, %s\n", __FILE__, __LINE__, state->selected_gameid, state->selected_game->name);	
+					}
+					ui_DrawMainWindow();
+					ui_UpdateBrowserPane(state, gamedata);
+					ui_DrawInfoBox();
+					ui_ReselectCurrentGame(state);
+					ui_UpdateInfoPane(state, gamedata, launchdat);
+					ui_UpdateBrowserPaneStatus(state);
+					ui_DisplayArtwork(screenshot_file, screenshot_bmp, state, imagefile);
+					gfx_Flip();
+					break;
+				default:
+					break;
+			}
+		}
+		
+		// ==================================================
+		//
+		// This window lets us choose which active filter 
+		// to apply in the selected filter mode: 
+		//
+		// Genre: RPG, Adventure, Shooter, etc.
+		// Series: Lodoss War, Amaranth, Touhou etc.
+		//
+		// ==================================================
+		if (active_pane == FILTER_PANE){
+			switch(user_input){
+				case(input_quit):
+					// Exit the application
+					exit = 1;
+					zeroRunBat();
+					break;
+				case(input_up):
+					if (config->verbose){
+						printf("%s.%d\t Toggle filter selection up\n", __FILE__, __LINE__);	
+					}
+					ui_DrawFilterPopup(state, -1);
+					gfx_Flip();
+					break;
+				case(input_down):
+					if (config->verbose){
+						printf("%s.%d\t Toggle filter selection down\n", __FILE__, __LINE__);	
+					}
+					ui_DrawFilterPopup(state, 1);
+					gfx_Flip();
+					break;
+				case(input_select):
+					if (state->selected_filter == FILTER_GENRE){
+						// Now apply the chosen filter
+						status = filter_Genre(state, gamedata);
+					}
+					
+					if (state->selected_filter == FILTER_SERIES){
+						// Now apply the chosen filter
+						status = filter_Series(state, gamedata);
+					}
+					if (config->verbose){
+						printf("%s.%d\t Closing filter popup(s)\n", __FILE__, __LINE__);	
+					}
+					active_pane = BROWSER_PANE;
+					// exit and redraw main window
+					if (config->verbose){
+						printf("%s.%d\t Redrawing main screen for Game ID: %d, %s\n", __FILE__, __LINE__, state->selected_gameid, state->selected_game->name);	
+					}
+					ui_DrawMainWindow();
+					ui_UpdateBrowserPane(state, gamedata);
+					ui_DrawInfoBox();
+					ui_ReselectCurrentGame(state);
+					ui_UpdateInfoPane(state, gamedata, launchdat);
+					ui_UpdateBrowserPaneStatus(state);
+					ui_DisplayArtwork(screenshot_file, screenshot_bmp, state, imagefile);
+					gfx_Flip();
+					user_input = input_get();
+					break;
+				case(input_cancel):
+					if (config->verbose){
+						printf("%s.%d\t Closing filter keyword popup\n", __FILE__, __LINE__);	
+					}
+					active_pane = BROWSER_PANE;
+					// exit and redraw main window
+					if (config->verbose){
+						printf("%s.%d\t Redrawing main screen for Game ID: %d, %s\n", __FILE__, __LINE__, state->selected_gameid, state->selected_game->name);	
+					}
+					ui_DrawMainWindow();
+					ui_UpdateBrowserPane(state, gamedata);
+					ui_DrawInfoBox();
+					ui_ReselectCurrentGame(state);
+					ui_UpdateInfoPane(state, gamedata, launchdat);
+					ui_UpdateBrowserPaneStatus(state);
+					ui_DisplayArtwork(screenshot_file, screenshot_bmp, state, imagefile);
+					gfx_Flip();
+					break;
+				default:
+					break;
+			}
+		}
+		
+		// ==================================================
+		//
 		// Main browser window, listing all of our games
+		//
+		// ==================================================
 		if (active_pane == BROWSER_PANE){
 			switch(user_input){
 				case(input_quit):
 					// Exit the application
 					exit = 1;
 					zeroRunBat();
+					break;
+				case(input_help):
+					// Show help screen
+					if (config->verbose){
+						printf("%s.%d\t Attempting launch help popup...\n", __FILE__, __LINE__);	
+					}
+					//active_pane = HELP_PANE;
+					break;
+				case(input_filter):
+					// Show filter screen
+					if (config->verbose){
+						printf("%s.%d\t Attempting launch filter pre-popup...\n", __FILE__, __LINE__);	
+					}
+					active_pane = FILTER_PRE_PANE;
+					ui_DrawFilterPrePopup(state, 0);
+					gfx_Flip();
 					break;
 				case(input_select):
 					// Start a game or launch a config tool
@@ -613,7 +820,7 @@ int main() {
 								printf("%s.%d\t - Action: Drawing launcher popup\n", __FILE__, __LINE__);	
 							}
 							active_pane = LAUNCH_PANE;
-							state->selected_start = 0;
+							state->selected_start = START_MAIN;
 							ui_DrawLaunchPopup(state, gamedata, launchdat, 0);
 							gfx_Flip();
 							
@@ -623,7 +830,7 @@ int main() {
 								printf("%s.%d\t - Action: Drawing confirmation popup\n", __FILE__, __LINE__);	
 							}
 							active_pane = CONFIRM_PANE;
-							state->selected_start = 0;
+							state->selected_start = START_MAIN;
 							ui_DrawConfirmPopup(state, gamedata, launchdat);
 							gfx_Flip();
 							
@@ -633,7 +840,7 @@ int main() {
 								printf("%s.%d\t - Action: Closing to start game (alt start)\n", __FILE__, __LINE__);	
 							}
 							active_pane = CONFIRM_PANE;
-							state->selected_start = 1;
+							state->selected_start = START_ALT;
 							ui_DrawConfirmPopup(state, gamedata, launchdat);
 							gfx_Flip();
 							
@@ -742,7 +949,12 @@ int main() {
 				default:
 					break;
 			}
-			//gfx_Flip();
+			// ===================================================================
+			//
+			// Once all of the input has been taken care of in the browser window, 
+			// this is where we decide whether to repaint the screen or not.
+			//
+			// ===================================================================
 			
 			// Only refresh browser, artwork and info panes if the selected game has changed
 			if (old_gameid != state->selected_gameid){

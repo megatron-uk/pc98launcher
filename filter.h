@@ -1,4 +1,4 @@
-/* input.h, User input routines for the pc98Launcher.
+/* filter.h, Apply sorting and filtering to gamedata lists.
  Copyright (C) 2020  John Snowdon
  
  This program is free software: you can redistribute it and/or modify
@@ -15,21 +15,23 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __HAS_DATA
+#include "data.h"
+#define __HAS_DATA
+#endif
+#ifndef __HAS_MAIN
+#include "main.h"
+#define __HAS_MAIN
+#endif
 
-// Input codes as returned to main()
-#define input_none				0x0000
-#define input_select				0x1C0D // Enter
-#define input_cancel				0x011B // Escape
-#define input_switch				0x0F09 // Tab
-#define input_up					0x48E0
-#define input_down				0x50E0
-#define input_left				0x4BE0
-#define input_right				0x4DE0
-#define input_scroll_up			0x49E0 // Page up
-#define input_scroll_down		0x51E0 // Page down
-#define input_quit				0x1071 // Q == Quit
-#define input_filter				0x2166 // F == Filter
-#define input_help				0x2368 // H == Help
+// Defaults
+#define FILTER_VERBOSE	1		// Enable/disable logging for these functions
+#define	FILTER_OK		0		// Success returncode
+#define FILTER_ERR		-1		// Failure returncode
 
 // Function prototypes
-int	input_get();
+int filter_GetGenre(state_t *state, gamedata_t *gamedata);
+int filter_GetSeries(state_t *state, gamedata_t *gamedata);
+int filter_None(state_t *state, gamedata_t *gamedata);
+int filter_Genre(state_t *state, gamedata_t *gamedata);
+int filter_Series(state_t *state, gamedata_t *gamedata);

@@ -286,7 +286,6 @@ int writeRunBat(state_t *state, launchdat_t *launchdat){
 	// Write a RUN.BAT file in our application directory to launch the state->selected_start exe
 	// from the launchdat file at application exit.
 	
-	char buf[255];
 	FILE *runbat;
 	
 	runbat = fopen(RUNBAT, "w");
@@ -301,27 +300,32 @@ int writeRunBat(state_t *state, launchdat_t *launchdat){
 		return -1;
 	}
 	
-	// Change to game drive
-	fputc(state->selected_game->drive, runbat);
-	fputs(":", runbat);
-	fputs("\n", runbat);
+	if (FS_VERBOSE){
+		fprintf(runbat, "REM ID: %d\n", state->selected_game->gameid);
+		fprintf(runbat, "REM Name: %s\n", state->selected_game->name);
+		fprintf(runbat, "REM Drive: %c\n", state->selected_game->drive);
+		fprintf(runbat, "REM Path: %s\n", state->selected_game->path);
+		fprintf(runbat, "REM Start: %s\n", launchdat->start);
+		fprintf(runbat, "REM Alt Start: %s\n", launchdat->alt_start);
+		fputs("\n", runbat);
+	}
 	
+	// Change to game drive
+	fprintf(runbat, "%c: \n", state->selected_game->drive);
+
 	// CD to game directory
-	fputs("cd ", runbat);
-	fputs(state->selected_game->path, runbat);
-	fputs("\n", runbat);
+	fprintf(runbat, "cd %s \n", state->selected_game->path);
 	
 	// Call selected start file
 	if (state->selected_start == 0){
-		fputs(launchdat->start, runbat);
+		fprintf(runbat, "%s \n", launchdat->start);
 	} else {
-		fputs(launchdat->alt_start, runbat);
+		fprintf(runbat, "%s \n", launchdat->alt_start);
 	}
-	fputs("\n", runbat);
 	
 	// Return to original directory
-	fputs("cd -", runbat);
-	fputs("\n", runbat);
+	//fputs("cd -", runbat);
+	//fputs("\n", runbat);
 	
 	// Close run.bat
 	fclose(runbat);

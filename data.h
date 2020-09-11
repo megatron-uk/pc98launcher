@@ -27,10 +27,10 @@
 #define MAX_IMAGES			16					// max number of images we try to load
 #define IMAGE_BUFFER_SIZE	256					// Maximum size of game screenshot string (8 + 22 + overhead) 
 #define MAX_DIRS				16					// Maximum number of game search paths - 16 sounds... okay?
-#define MAX_FILENAME_SIZE   13					// 8 + 3 + 1 for the ., plus 1 for \0
+#define MAX_FILENAME_SIZE    13					// 8 + 3 + 1 for the ., plus 1 for \0
 #define MAX_STRING_SIZE		32
 #define MAX_SEARCHDIRS_SIZE	1024
-#define DATA_VERBOSE			1
+#define DATA_VERBOSE			0
 
 typedef struct gamedata {
 	int gameid;				// Unique ID for this game - assigned at scan time

@@ -27,7 +27,7 @@ TARGET	= launcher.exe
 
 all: $(TARGET)
 
-OBJFILES = bmp.o data.o fstools.o gfx.o ini.o input.o main.o palette.o ui.o utils.o 
+OBJFILES = bmp.o data.o filter.o fstools.o gfx.o ini.o input.o main.o palette.o ui.o utils.o 
 
 $(TARGET):  $(OBJFILES)
 	gcc.exe $(LDFLAGS) $(OBJFILES) $(LIBS) -o $(TARGET)
@@ -38,6 +38,9 @@ bmp.o: bmp.c
 	
 data.o: data.c
 	gcc.exe $(CFLAGS) -c data.c -o data.o
+
+filter.o: filter.c
+	gcc.exe $(CFLAGS) -c filter.c -o filter.o
 	
 fstools.o: fstools.c
 	gcc.exe $(CFLAGS) -c fstools.c -o fstools.o

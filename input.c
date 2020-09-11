@@ -48,7 +48,12 @@ int input_get(){
 				return input_scroll_down;
 			case(input_quit):
 				return input_quit;
+			case(input_filter):
+				return input_filter;
+			case(input_help):
+				return input_help;
 			default:
+				//printf("Input: %x\n", k);
 				return input_none;
 		}
 	} else {
