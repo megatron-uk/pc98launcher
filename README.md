@@ -109,7 +109,7 @@ You can add additional metadata to your game by placing a text file in each game
 The contents of this file is as follows:
 
 ```
-[defaults]
+[default]
 name=
 developer=
 midi_mpu=
