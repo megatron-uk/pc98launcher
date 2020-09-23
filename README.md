@@ -67,6 +67,14 @@ You don't need to set anything in config.sys or autoexec.bat.
 
 Edit launcher.ini with a normal text editor and set the `gamedirs` variable to all of the locations of games on your hard drive(s).
 
+The following settings are available for launcher.ini:
+
+   * gamedirs=A:\Path1,B:\Path2,B:\Path3 - List the directories which contain your game subdirectories
+   * verbose=0|1 - Enable text mode logging for troubleshooting purposes
+   * savedirs=0|1 - Save the scraped list of games to a text file at start
+   * preload_names=0|1 - For each found game, attempt to load the metadata file to get its real name. This will slow initial scraping down.
+   * keyboard_test=0|1 - Before starting the UI, prompt the user to do a quick input test
+
 If you have your games under folders such as `A:\Games\Arkanoid` and `A:\Games\Dark` for example, then you only need to add the path `A:\Games`. You may add up to 16 comma seperated game paths, and these can be for different drives if you wish.
 
 <u>Just run `l.bat` to start the application.</u>
