@@ -132,7 +132,7 @@ Finally, the `start` and `alt_start` data determines which exe should be launche
 An example is shown below:
 
 ```
-[defaults]
+[default]
 name=Advanced Power Dolls 2
 developer=Kogado Studio Inc.
 midi_mpu=0

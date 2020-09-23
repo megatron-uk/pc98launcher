@@ -30,7 +30,7 @@
 #define MAX_FILENAME_SIZE    13					// 8 + 3 + 1 for the ., plus 1 for \0
 #define MAX_STRING_SIZE		32
 #define MAX_SEARCHDIRS_SIZE	1024
-#define DATA_VERBOSE			0
+#define DATA_VERBOSE			1
 
 typedef struct gamedata {
 	int gameid;				// Unique ID for this game - assigned at scan time
@@ -70,6 +70,7 @@ typedef struct config {
 	int verbose;				// Verbose/debug flag
 	int save;					// Save the list of all games to a text file
 	int preload_names;		// Flag to indicate wheter a launch.dat is loaded at scrape-time to pick up real names
+	int keyboard_test;
 	char dirs[MAX_SEARCHDIRS_SIZE];			// String containing all game dirs to search - it will then be parsed into a list below:
 	struct gamedir *dir;		// List of all the game search dirs
 } __attribute__((__packed__)) __attribute__((aligned (2))) config_t;

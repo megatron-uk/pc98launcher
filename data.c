@@ -284,6 +284,7 @@ void configDefaults(config_t *config){
 	config->save = 0;
 	config->preload_names = 0;
 	config->dir = NULL;
+	config->keyboard_test = 0;
 }
 
 int getLaunchdata(gamedata_t *gamedata, launchdat_t *launchdat){
@@ -329,6 +330,8 @@ static int configHandler(void* user, const char* section, const char* name, cons
 		config->save =  atoi(value);
 	} else if (MATCH("default", "preload_names")){
 		config->preload_names =  atoi(value);
+	} else if (MATCH("default", "keyboard_test")){
+		config->keyboard_test =  atoi(value);
 	} else {
 		return 0;  /* unknown section/name, error */
 	}

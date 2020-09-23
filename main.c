@@ -135,6 +135,8 @@ int main() {
 		state->selected_list[i] = NULL;
 	}
 	
+	
+	
 	/* ************************************** */
 	/* Parse our ini file */
 	/* ************************************** */
@@ -165,14 +167,22 @@ int main() {
 		printf("verbose=%d\n", config->verbose);
 		printf("gamedirs=%s\n", config->dirs);
 		printf("save=%d\n", config->save);
+		printf("keyboard_test=%d\n", config->keyboard_test);
 		printf("preload_names=%d\n", config->preload_names);
 		printf("\n");
 		if (config->verbose == 0){
 			printf("Verbose mode is disabled, you will not receive any further logging after this point\n");
 			printf("If required, enable verbose mode by adding: verbose=1 to %s\n", INIFILE);
 			printf("\n");
-			gfx_TextOff();
+			//gfx_TextOff();
 		}
+	}
+	
+	// =======================================
+	// Run the keyboard input test, if enabled
+	// =======================================
+	if (config->keyboard_test == 1){
+		input_test();
 	}
 	
 	// ======================

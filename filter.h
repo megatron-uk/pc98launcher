@@ -25,7 +25,7 @@
 #endif
 
 // Defaults
-#define FILTER_VERBOSE	1		// Enable/disable logging for these functions
+#define FILTER_VERBOSE	0		// Enable/disable logging for these functions
 #define	FILTER_OK		0		// Success returncode
 #define FILTER_ERR		-1		// Failure returncode
 

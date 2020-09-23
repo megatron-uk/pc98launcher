@@ -15,6 +15,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define KB_DELAY					100		// 60ms delay before reading keyboard state
 
 // Input codes as returned to main()
 #define input_none				0x0000
@@ -27,9 +28,13 @@
 #define input_right				0x4DE0
 #define input_scroll_up			0x49E0 // Page up
 #define input_scroll_down		0x51E0 // Page down
-#define input_quit				0x1071 // Q == Quit
-#define input_filter				0x2166 // F == Filter
-#define input_help				0x2368 // H == Help
+#define input_quit				0x1051 // Q == Quit
+#define input_quit_lower			0x1071 // Q == Quit
+#define input_filter				0x2146 // F == Filter
+#define input_filter_lower		0x2166 // F == Filter
+#define input_help				0x2348 // H == Help
+#define input_help_lower			0x2369 // H == Help
 
 // Function prototypes
 int	input_get();
+int input_test();
